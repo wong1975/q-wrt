@@ -47,5 +47,9 @@ jobs:
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: xiaomi-ax3600-firmware
+          name: xiaomi-AX3600-firmware
           path: openwrt/bin/targets/ipq807x/generic/
+          if-no-files-found: warn
+          compression-level: 6
+          overwrite: false
+          include-hidden-files: false
