@@ -30,7 +30,7 @@ jobs:
 
       - name: Copy custom config
         run: |
-          cp $GITHUB_WORKSPACE/xiaomi_ax3600.config openwrt/.config
+          cp $GITHUB_WORKSPACE/configs/xiaomi_ax3600.config
 
       - name: Download package sources
         run: |
