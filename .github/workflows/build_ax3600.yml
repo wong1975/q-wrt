@@ -16,7 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       #image: openwrtorg/sdk:latest
-      image: ghcr.io/openwrt/sdk:latest
+      image: ghcr.io/openwrt/sdk:22.03.5
+      options: --user root --privileged
 
     steps:
       - name: Checkout code
