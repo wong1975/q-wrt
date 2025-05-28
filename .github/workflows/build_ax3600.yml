@@ -1,0 +1,46 @@
+name: Build XiaoMi-AX3600 Firmware
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  DEVICE: xiaomi_ax3600
+
+jobs:
+  build:
+    name: Build XiaoMi-AX3600
+    runs-on: ubuntu-latest
+    container:
+      image: openwrtorg/sdk:latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup build environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libncurses5-dev gawk git libssl-dev gettext zlib1g-dev swig unzip time python3
+
+      - name: Prepare configuration
+        run: |
+          cp configs/${{ env.DEVICE }}.config .config
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+          make defconfig
+
+      - name: Build firmware
+        run: |
+          make -j$(($(nproc) + 1)) || make -j1 V=s
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.DEVICE }}_firmware
+          path: bin/targets/ipq807x/generic/
