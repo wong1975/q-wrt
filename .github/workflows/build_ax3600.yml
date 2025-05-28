@@ -15,7 +15,8 @@ jobs:
     name: Build XiaoMi-AX3600
     runs-on: ubuntu-latest
     container:
-      image: openwrtorg/sdk:latest
+      #image: openwrtorg/sdk:latest
+      image: ghcr.io/openwrt/sdk:latest
 
     steps:
       - name: Checkout code
