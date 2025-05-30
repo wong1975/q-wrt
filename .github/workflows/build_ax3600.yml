@@ -1,11 +1,17 @@
 name: Build OpenWrt for XiaoMi AX3600
 
 on:
+  schedule:
+    - cron: 0 20 * * *
   workflow_dispatch:
-  push:
-    branches:
-      - main
-      - master
+    inputs:
+      manual_config:
+        description: '需要进入 tmate SSH 手动 menuconfig 吗？'
+        required: false
+        default: 'n'
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -28,9 +34,52 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Copy custom config
+      - name: SSH 远程调试（tmate）进入 cd source && make menuconfig
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.manual_config == 'y' }}
+        uses: mxschmitt/action-tmate@v3
+
+      - name: Find and copy first .config (if any)
         run: |
-          cp $GITHUB_WORKSPACE/configs/xiaomi_ax3600.config openwrt/.config
+          find . -name .config -print -exec cp {} ./found.config \; -quit
+          ls -l found.config || echo "No .config found"
+
+      - name: Upload .config from all possible locations
+        uses: actions/upload-artifact@v4
+        with:
+          name: config
+          path: |
+            found.config
+            source/.config
+            .config
+
+      #- name: Generate configuration file
+      #  run: make defconfig
+
+      - name: Generate configuration file
+        run: |
+          rm -f ./.config*
+          touch ./.config
+
+          #
+          # 在 cat >> .config <<EOF 到 EOF 之间粘贴你的编译配置, 需注意缩进关系
+          # 例如:
+
+          cat >> .config <<EOF
+          CONFIG_TARGET_qualcommax=y
+          CONFIG_TARGET_qualcommax_ipq807x=y
+          CONFIG_TARGET_PROFILE="DEVICE_xiaomi_ax3600"
+          EOF
+
+          #
+          # ===============================================================
+          # 
+
+          sed -i 's/^[ \t]*//g' ./.config
+          make defconfig
+          
+      #- name: Copy custom config
+        #run: |
+          #cp $GITHUB_WORKSPACE/configs/xiaomi_ax3600.config openwrt/.config
 
       - name: Download package sources
         run: |
