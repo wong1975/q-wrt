@@ -1,8 +1,8 @@
 name: Build OpenWrt for XiaoMi AX3600
 
 on:
-  schedule:
-    - cron: 0 20 * * *
+  #schedule:
+    #- cron: 0 20 * * *
   workflow_dispatch:
     inputs:
       manual_config:
